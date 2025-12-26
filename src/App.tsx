@@ -12,6 +12,12 @@ import Projects from "./pages/Projects";
 import NewProject from "./pages/NewProject";
 import ProjectDetail from "./pages/ProjectDetail";
 import NewWorkspace from "./pages/NewWorkspace";
+import Tasks from "./pages/Tasks";
+import Calendar from "./pages/Calendar";
+import Team from "./pages/Team";
+import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
+import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -91,6 +97,61 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Core pages */}
+      <Route
+        path="/tasks"
+        element={
+          <ProtectedRoute>
+            <Tasks />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/calendar"
+        element={
+          <ProtectedRoute>
+            <Calendar />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/team"
+        element={
+          <ProtectedRoute>
+            <Team />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/analytics"
+        element={
+          <ProtectedRoute>
+            <Analytics />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
+      {/* Back-compat for sidebar dropdown link */}
+      <Route
+        path="/settings/profile"
+        element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Public invite accept page (handles auth prompts internally) */}
+      <Route path="/accept-invite" element={<AcceptInvite />} />
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
