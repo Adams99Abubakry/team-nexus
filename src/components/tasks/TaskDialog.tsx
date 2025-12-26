@@ -39,8 +39,10 @@ interface TaskDialogProps {
   onOpenChange: (open: boolean) => void;
   task: Task | null;
   projectId: string;
-  projectPrefix: string;
-  onSaved: () => void;
+  projectPrefix?: string;
+  onSaved?: () => void;
+  onTaskSaved?: () => void;
+  defaultDueDate?: Date;
 }
 
 const STATUSES = [
@@ -64,8 +66,10 @@ export function TaskDialog({
   onOpenChange,
   task,
   projectId,
-  projectPrefix,
+  projectPrefix = "",
   onSaved,
+  onTaskSaved,
+  defaultDueDate,
 }: TaskDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -80,6 +84,12 @@ export function TaskDialog({
 
   const isEditing = !!task;
 
+  const handleSaved = () => {
+    onSaved?.();
+    onTaskSaved?.();
+    onOpenChange(false);
+  };
+
   useEffect(() => {
     if (task) {
       setTitle(task.title);
@@ -92,9 +102,10 @@ export function TaskDialog({
       setDescription("");
       setStatus("todo");
       setPriority("medium");
-      setDueDate("");
+      // Set default due date if provided
+      setDueDate(defaultDueDate ? defaultDueDate.toISOString().split('T')[0] : "");
     }
-  }, [task, open]);
+  }, [task, open, defaultDueDate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,7 +163,7 @@ export function TaskDialog({
         });
       }
 
-      onSaved();
+      handleSaved();
     } catch (error: any) {
       console.error("Error saving task:", error);
       toast({
@@ -180,7 +191,7 @@ export function TaskDialog({
         description: "The task has been removed.",
       });
 
-      onSaved();
+      handleSaved();
     } catch (error: any) {
       console.error("Error deleting task:", error);
       toast({
