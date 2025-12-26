@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from "@/hooks/use-toast";
 import { 
   Users, UserPlus, Mail, Shield, Crown, Eye, 
-  MoreHorizontal, Trash2, Loader2, Clock, CheckCircle2, XCircle
+  Trash2, Loader2, Clock, XCircle, Copy, Link, CheckCircle
 } from "lucide-react";
 import { format } from "date-fns";
 import type { Database } from "@/integrations/supabase/types";
@@ -61,6 +61,8 @@ export default function Team() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<string>("member");
   const [inviting, setInviting] = useState(false);
+  const [lastInviteLink, setLastInviteLink] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const currentUserRole = members.find(m => m.user_id === user?.id)?.role;
   const canManageMembers = currentUserRole === "owner" || currentUserRole === "admin";
@@ -102,6 +104,8 @@ export default function Team() {
     if (!currentWorkspace || !inviteEmail || !user) return;
 
     setInviting(true);
+    setLastInviteLink(null);
+    setLinkCopied(false);
 
     try {
       // Get current user's profile for the inviter name
@@ -123,13 +127,22 @@ export default function Team() {
 
       if (response.error) throw response.error;
 
-      toast({
-        title: "Invitation sent",
-        description: `Invitation email sent to ${inviteEmail}`,
-      });
+      const { inviteUrl, emailSent } = response.data;
+      setLastInviteLink(inviteUrl);
+
+      if (emailSent) {
+        toast({
+          title: "Invitation sent",
+          description: `Email sent to ${inviteEmail}`,
+        });
+      } else {
+        toast({
+          title: "Invitation created",
+          description: "Copy the invite link below to share with the invitee",
+        });
+      }
 
       setInviteEmail("");
-      setInviteDialogOpen(false);
       fetchTeamData();
     } catch (error: any) {
       toast({
@@ -139,6 +152,18 @@ export default function Team() {
       });
     } finally {
       setInviting(false);
+    }
+  };
+
+  const copyInviteLink = async () => {
+    if (lastInviteLink) {
+      await navigator.clipboard.writeText(lastInviteLink);
+      setLinkCopied(true);
+      toast({
+        title: "Link copied!",
+        description: "Share this link with the invitee",
+      });
+      setTimeout(() => setLinkCopied(false), 3000);
     }
   };
 
@@ -257,14 +282,51 @@ export default function Team() {
                     </Select>
                   </div>
                 </div>
+                
+                {/* Show invite link after creation */}
+                {lastInviteLink && (
+                  <div className="space-y-2 p-4 bg-muted rounded-lg">
+                    <Label className="flex items-center gap-2">
+                      <Link className="w-4 h-4" />
+                      Invite Link (share manually)
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input 
+                        value={lastInviteLink} 
+                        readOnly 
+                        className="text-sm"
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={copyInviteLink}
+                      >
+                        {linkCopied ? (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Copy and share this link via email, WhatsApp, or any messaging app
+                    </p>
+                  </div>
+                )}
+                
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
-                    Cancel
+                  <Button variant="outline" onClick={() => {
+                    setInviteDialogOpen(false);
+                    setLastInviteLink(null);
+                  }}>
+                    {lastInviteLink ? "Done" : "Cancel"}
                   </Button>
-                  <Button onClick={handleInvite} disabled={inviting || !inviteEmail}>
-                    {inviting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    Send Invitation
-                  </Button>
+                  {!lastInviteLink && (
+                    <Button onClick={handleInvite} disabled={inviting || !inviteEmail}>
+                      {inviting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                      Create Invitation
+                    </Button>
+                  )}
                 </DialogFooter>
               </DialogContent>
             </Dialog>

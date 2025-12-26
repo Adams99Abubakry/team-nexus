@@ -53,7 +53,7 @@ serve(async (req: Request): Promise<Response> => {
 
     const { email, workspaceId, workspaceName, role, inviterName }: InvitationRequest = await req.json();
 
-    console.log(`Sending invitation to ${email} for workspace ${workspaceName}`);
+    console.log(`Creating invitation for ${email} to workspace ${workspaceName}`);
 
     // Create invitation record
     const { data: invitation, error: inviteError } = await supabase
@@ -78,14 +78,29 @@ serve(async (req: Request): Promise<Response> => {
           .single();
         
         if (existingInvite) {
-          // Just resend the email
           const inviteUrl = `${req.headers.get("origin") || "https://flowboard.app"}/accept-invite?token=${existingInvite.token}`;
-          await sendEmail(
-            email,
-            `You've been invited to join ${workspaceName}`,
-            getEmailHtml(inviterName, workspaceName, role, inviteUrl)
-          );
-          return new Response(JSON.stringify({ success: true, invitation: existingInvite }), {
+          
+          // Try to send email, but don't fail if it doesn't work
+          let emailSent = false;
+          if (RESEND_API_KEY) {
+            try {
+              await sendEmail(
+                email,
+                `You've been invited to join ${workspaceName}`,
+                getEmailHtml(inviterName, workspaceName, role, inviteUrl)
+              );
+              emailSent = true;
+            } catch (emailError) {
+              console.log("Email sending failed (optional):", emailError);
+            }
+          }
+          
+          return new Response(JSON.stringify({ 
+            success: true, 
+            invitation: existingInvite,
+            inviteUrl,
+            emailSent
+          }), {
             status: 200,
             headers: { "Content-Type": "application/json", ...corsHeaders },
           });
@@ -96,15 +111,30 @@ serve(async (req: Request): Promise<Response> => {
 
     const inviteUrl = `${req.headers.get("origin") || "https://flowboard.app"}/accept-invite?token=${invitation.token}`;
 
-    await sendEmail(
-      email,
-      `You've been invited to join ${workspaceName}`,
-      getEmailHtml(inviterName, workspaceName, role, inviteUrl)
-    );
+    // Try to send email, but don't fail if it doesn't work
+    let emailSent = false;
+    if (RESEND_API_KEY) {
+      try {
+        await sendEmail(
+          email,
+          `You've been invited to join ${workspaceName}`,
+          getEmailHtml(inviterName, workspaceName, role, inviteUrl)
+        );
+        emailSent = true;
+        console.log("Invitation email sent successfully to:", email);
+      } catch (emailError) {
+        console.log("Email sending failed (optional):", emailError);
+      }
+    }
 
-    console.log("Invitation sent successfully to:", email);
+    console.log("Invitation created successfully for:", email);
 
-    return new Response(JSON.stringify({ success: true, invitation }), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      invitation,
+      inviteUrl,
+      emailSent
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
