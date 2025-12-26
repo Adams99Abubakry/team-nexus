@@ -30,10 +30,10 @@ import {
   Search,
   Calendar,
   BarChart3,
-  Bell,
   Moon,
   Sun,
 } from "lucide-react";
+import { NotificationInbox } from "@/components/notifications/NotificationInbox";
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -196,6 +196,12 @@ export function AppSidebar() {
 
       {/* Bottom section */}
       <div className="p-3 border-t border-sidebar-border space-y-2">
+        {/* Notifications */}
+        <div className={cn("flex items-center", collapsed ? "justify-center" : "justify-start px-3")}>
+          <NotificationInbox />
+          {!collapsed && <span className="ml-3 text-sm">Notifications</span>}
+        </div>
+
         <NavItem
           icon={<Settings className="w-5 h-5" />}
           label="Settings"
