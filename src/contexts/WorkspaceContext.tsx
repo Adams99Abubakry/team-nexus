@@ -66,29 +66,24 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (!user) return null;
 
     try {
-      const { data: workspace, error: workspaceError } = await supabase
-        .from("workspaces")
-        .insert({
-          name,
-          slug,
-          description,
-          created_by: user.id,
-        })
-        .select()
-        .single();
-
-      if (workspaceError) throw workspaceError;
-
-      // Add creator as owner
-      const { error: memberError } = await supabase
-        .from("workspace_members")
-        .insert({
-          workspace_id: workspace.id,
-          user_id: user.id,
-          role: "owner",
+      // Use the atomic function to create workspace with owner
+      const { data: workspaceId, error } = await supabase
+        .rpc('create_workspace_with_owner', {
+          _name: name,
+          _slug: slug,
+          _description: description || null,
         });
 
-      if (memberError) throw memberError;
+      if (error) throw error;
+
+      // Fetch the created workspace
+      const { data: workspace, error: fetchError } = await supabase
+        .from("workspaces")
+        .select("*")
+        .eq("id", workspaceId)
+        .single();
+
+      if (fetchError) throw fetchError;
 
       await refreshWorkspaces();
       setCurrentWorkspace(workspace);
