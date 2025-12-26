@@ -2,3 +2,6 @@ project_id = "jklmvelretulnftfgyvh"
 
 [functions.send-invitation]
 verify_jwt = false
+
+[functions.ai-task-assistant]
+verify_jwt = false
