@@ -132,16 +132,29 @@ export function AIAssistant({ projectContext }: AIAssistantProps) {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+    utterance.pitch = 1.1;
     utterance.volume = 1.0;
 
-    // Try to find a good voice
+    // Find a female voice - prioritize common female voice names
     const voices = synthRef.current.getVoices();
-    const preferredVoice = voices.find(
-      (voice) => voice.name.includes("Google") || voice.name.includes("Samantha") || voice.lang.startsWith("en")
+    const femaleVoice = voices.find(
+      (voice) => 
+        voice.name.includes("Samantha") ||
+        voice.name.includes("Victoria") ||
+        voice.name.includes("Karen") ||
+        voice.name.includes("Moira") ||
+        voice.name.includes("Tessa") ||
+        voice.name.includes("Fiona") ||
+        voice.name.includes("Google UK English Female") ||
+        voice.name.includes("Google US English Female") ||
+        voice.name.includes("Microsoft Zira") ||
+        voice.name.includes("Female")
+    ) || voices.find(
+      (voice) => voice.lang.startsWith("en") && voice.name.toLowerCase().includes("female")
     );
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
+    
+    if (femaleVoice) {
+      utterance.voice = femaleVoice;
     }
 
     utterance.onstart = () => setIsSpeaking(true);
