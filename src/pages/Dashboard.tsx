@@ -120,22 +120,22 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="p-8 max-w-7xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col gap-4">
           <div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-2xl md:text-3xl font-bold">
               {greeting()}, {firstName}!
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-sm md:text-base text-muted-foreground mt-1">
               Here's what's happening in {currentWorkspace.name}
             </p>
           </div>
-          <div className="flex gap-3">
-            <Button variant="outline" asChild>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <Button variant="outline" asChild className="w-full sm:w-auto">
               <Link to="/projects">View All Projects</Link>
             </Button>
-            <Button asChild>
+            <Button asChild className="w-full sm:w-auto">
               <Link to="/projects/new">
                 <Plus className="w-4 h-4 mr-2" />
                 New Project
