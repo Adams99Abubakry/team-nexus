@@ -132,7 +132,7 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
         </div>
         {!isCollapsed && (
           <div className="flex-1 min-w-0">
-            <h1 className="font-bold text-sidebar-foreground truncate bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">FlowBoard</h1>
+            <h1 className="font-bold text-sidebar-foreground truncate">FlowBoard</h1>
           </div>
         )}
         {isMobile && onClose && (

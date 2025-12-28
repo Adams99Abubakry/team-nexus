@@ -45,7 +45,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             >
               <Menu className="w-5 h-5" />
             </Button>
-            <span className="font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">FlowBoard</span>
+            <span className="font-bold">FlowBoard</span>
             <div className="w-10" /> {/* Spacer for centering */}
           </header>
         )}
